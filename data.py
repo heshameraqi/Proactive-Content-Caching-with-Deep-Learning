@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 class MovieLensData:
     # read self.ratings, users, and movies
     def __init__(self):
-        MOVIELENS_DIR = 'ml-1m'  # Specify the data to use
+        MOVIELENS_DIR = os.path.join(os.path.join(os.getcwd(), 'data'), 'ml-1m')  # Specify the data to use
 
         # Specify User's Age and Occupation Column
         AGES = {1: "Under 18", 18: "18-24", 25: "25-34", 35: "35-44", 45: "45-49", 50: "50-55", 56: "56+"}
@@ -26,7 +26,7 @@ class MovieLensData:
         # Specify the data folders
         USER_DATA_FILE = 'users.dat'
         MOVIE_DATA_FILE = 'movies.dat'
-        RATING_DATA_FILE = 'self.ratings.dat'
+        RATING_DATA_FILE = 'ratings.dat'
         # Read the Ratings File
         self.ratings = pd.read_csv(os.path.join(MOVIELENS_DIR, RATING_DATA_FILE), sep='::', engine='python', encoding='latin-1', names=['user_id', 'movie_id', 'rating', 'timestamp'])
         # Process self.ratings dataframe for Keras Deep Learning model (Add colums: user_emb_id=user_id-1 & movie_emb_id=movie_id-1)
@@ -72,10 +72,12 @@ class MovieLensData:
         print(f'number of ratings: {len(self.ratings)}, num_users*num_movies: {(num_users * num_movies)}')
 
         # Plot histogram of the ratings
+        plt.figure()
         plt.hist(self.ratings['rating'], bins=5, ec='black')
         plt.xlabel('Rating')
         plt.ylabel('Count')
         plt.title('Distribution of Ratings in MovieLens 1M')
+        plt.show(block=False)
 
         '''# Set max_userid & max_movieid to the maximum user_id & movie_id in the self.ratings
         max_userid = self.ratings['user_id'].drop_duplicates().max()
