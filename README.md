@@ -5,3 +5,6 @@
 *   TODO List:
     *   Concatenate user personal info to the user embedding vector & movie genera to the movie embedding vector
     *   Add caching user nodes and replace ratings to requests
+    
+*   Dependencies:
+    *   Merge==2.1.5
