@@ -25,6 +25,8 @@ class CFModel(Sequential):
 
         super(CFModel, self).__init__(**kwargs)
 
+        # Add more
+
         # The Merge layer takes the dot product of user and movie latent factor vectors to return the corresponding rating.
         self.add(Merge([P, Q], mode='dot', dot_axes=1))
 
