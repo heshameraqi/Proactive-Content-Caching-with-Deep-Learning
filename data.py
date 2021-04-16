@@ -8,6 +8,7 @@ import os
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 
 class MovieLensData:
@@ -41,7 +42,11 @@ class MovieLensData:
         # Read the Movies File
         self.movies = pd.read_csv(os.path.join(MOVIELENS_DIR, MOVIE_DATA_FILE), sep='::', engine='python', encoding='latin-1', names=['movie_id', 'title', 'genres'])
 
-        '''# Define csv files to save Keras data into
+        # Set max_userid & max_movieid to the maximum user_id & movie_id in the self.ratings
+        self.max_userid = self.ratings['user_id'].drop_duplicates().max()
+        self.max_movieid = self.ratings['movie_id'].drop_duplicates().max()
+
+        """# Define csv files to save Keras data into
         USERS_CSV_FILE = 'users.csv'
         MOVIES_CSV_FILE = 'movies.csv'
         RATINGS_CSV_FILE = 'self.ratings.csv'
@@ -59,7 +64,7 @@ class MovieLensData:
         max_userid = self.ratings['user_id'].drop_duplicates().max()
         max_movieid = self.ratings['movie_id'].drop_duplicates().max()
         users = pd.read_csv('users.csv', sep='\t', encoding='latin-1', usecols=['user_id', 'gender', 'zipcode', 'age_desc', 'occ_desc'])
-        movies = pd.read_csv('movies.csv', sep='\t', encoding='latin-1', usecols=['movie_id', 'title', 'genres'])'''
+        movies = pd.read_csv('movies.csv', sep='\t', encoding='latin-1', usecols=['movie_id', 'title', 'genres'])"""
 
     def print_statistics(self):
         # Print first 5 samples
@@ -72,26 +77,26 @@ class MovieLensData:
         print(f'number of ratings: {len(self.ratings)}, num_users*num_movies: {(num_users * num_movies)}')
 
         # Plot histogram of the ratings
-        plt.figure()
+        """plt.figure()
         plt.hist(self.ratings['rating'], bins=5, ec='black')
         plt.xlabel('Rating')
         plt.ylabel('Count')
-        plt.title('Distribution of Ratings in MovieLens 1M')
+        plt.title('Distribution of Ratings in MovieLens 1M')"""
+        sns.set_style('whitegrid')
+        sns.set(font_scale=1.5)
+        sns.distplot(self.ratings['rating'].fillna(self.ratings['rating'].median()))
         plt.show(block=False)
-
-        '''# Set max_userid & max_movieid to the maximum user_id & movie_id in the self.ratings
-        max_userid = self.ratings['user_id'].drop_duplicates().max()
-        max_movieid = self.ratings['movie_id'].drop_duplicates().max()'''
 
     # Reads the dataframe line by line and enumerates the index of users/items start from zero.
     # The function then returns lists of users, items, ratings and a dictionary/matrix that records the interactions.
     # We can specify the type of feedback to either explicit or implicit.
-    def load_data(self, feedback='explicit'):
+    @staticmethod
+    def load_data(ratings_data, feedback='explicit'):
         users, items, scores = [], [], []
-        num_users = self.ratings.user_id.unique().shape[0]
-        num_movies = self.ratings.movie_id.unique().shape[0]
+        num_users = ratings_data.user_id.unique().shape[0]
+        num_movies = ratings_data.movie_id.unique().shape[0]
         inter = np.zeros((num_movies, num_users)) if feedback == 'explicit' else {}
-        for line in self.ratings.itertuples():
+        for line in ratings_data.itertuples():
             user_index, item_index = int(line[1] - 1), int(line[2] - 1)
             score = int(line[3]) if feedback == 'explicit' else 1
             users.append(user_index)
