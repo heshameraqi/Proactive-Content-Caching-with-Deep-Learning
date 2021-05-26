@@ -89,6 +89,8 @@ class SimModel:
         rec_movies_list_all = list()
         # Use the pre-trained model
         for i in range(1, len(self.users)+1):
+        # TODO: check about which users to use (e.g., if a movie is recommended for more than X (threshold) users, it will be cached)
+        # TODO: this will depend on the caching scheme
         # for i in range(1, 2):
             # Predict user ratings (enter user and his recommended movies --> get rating)
             # print("data.ratings: \n", data.ratings)
