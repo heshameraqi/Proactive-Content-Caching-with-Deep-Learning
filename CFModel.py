@@ -6,7 +6,7 @@ import numpy as np
 # from keras.layers import Embedding, Reshape, Merge
 # from keras.models import Sequential
 from keras.models import Model, Sequential
-from keras.layers import Embedding, Flatten, Input, merge, Dropout, Dense, BatchNormalization, Reshape, Merge
+from keras.layers import Embedding, Flatten, Input, Dropout, Dense, BatchNormalization, Reshape, Dot
 
 class CFModel(Sequential):
 
@@ -28,8 +28,8 @@ class CFModel(Sequential):
 
         # Add more
 
-        # The Merge layer takes the dot product of user and movie latent factor vectors to return the corresponding rating.
-        self.add(Merge([P, Q], mode='dot', dot_axes=1))
+        # Take the dot product of user and movie latent factor vectors to return the corresponding rating
+        self.add(Dot([P, Q], axes=1))
 
     # The rate function to predict user's rating of unrated items
     def rate(self, user_id, item_id):
