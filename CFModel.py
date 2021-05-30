@@ -7,6 +7,7 @@ import numpy as np
 # from keras.models import Sequential
 from keras.models import Model, Sequential
 from keras.layers import Embedding, Flatten, Dropout, Dense, BatchNormalization, Reshape, Dot, dot
+import tensorflow as tf
 
 
 class CFModel(Sequential):
