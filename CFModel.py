@@ -6,7 +6,8 @@ import numpy as np
 # from keras.layers import Embedding, Reshape, Merge
 # from keras.models import Sequential
 from keras.models import Model, Sequential
-from keras.layers import Embedding, Flatten, Input, Dropout, Dense, BatchNormalization, Reshape, Dot, Concatenate
+from keras.layers import Embedding, Flatten, Input, merge, Dropout, Dense, BatchNormalization, Reshape, Merge
+
 
 class CFModel(Sequential):
 
@@ -28,14 +29,14 @@ class CFModel(Sequential):
 
         # Add more
 
-        # Take the dot product of user and movie latent factor vectors to return the corresponding rating
-        self.add(Dot([P, Q], axes=1))
+        # The Merge layer takes the dot product of user and movie latent factor vectors to return the corresponding rating.
+        self.add(Merge([P, Q], mode='dot', dot_axes=1))
 
     # The rate function to predict user's rating of unrated items
     def rate(self, user_id, item_id):
         return self.predict([np.array([user_id]), np.array([item_id])])[0][0]
-		
-		
+
+
 class NCFModel():
 
     def __init__(self, n_users, m_items, k_factors, **kwargs):
@@ -60,7 +61,7 @@ class NCFModel():
         user_vec_mf.add(Reshape((k_factors,)))
         # MLP layers
         model_mlp = Sequential()
-        model_mlp.add(Concatenate([movie_vec_mlp, user_vec_mlp], axes=1))
+        model_mlp.add(Merge([movie_vec_mlp, user_vec_mlp], mode='concat', dot_axes=1))
         model_mlp.add(Dropout(0.2))
         model_mlp.add(Dense(100, activation='relu'))
         model_mlp.add(BatchNormalization())
@@ -72,9 +73,9 @@ class NCFModel():
 
         # Prediction from both layers
         model_mf = Sequential()
-        model_mf.add(Dot([movie_vec_mf, user_vec_mf], axes=1))
+        model_mf.add(Merge([movie_vec_mf, user_vec_mf], mode='dot', dot_axes=1))
         self.model_mlp_mf = Sequential()
-        self.model_mlp_mf.add(Concatenate([model_mf, model_mlp], axes=1))
+        self.model_mlp_mf.add(Merge([model_mf, model_mlp], mode='concat', dot_axes=1))
 
         # Final prediction
         self.model_mlp_mf.add(Dense(1, activation='relu'))
@@ -99,7 +100,7 @@ class NCFModel():
         user_vec_mf = Flatten(name='flatten-user-mf')(user_embedding_mf)
 
         # MLP layers
-        concat = Concatenate([movie_vec_mlp, user_vec_mlp], name='concat')
+        concat = merge([movie_vec_mlp, user_vec_mlp], mode='concat', name='concat')
         concat_dropout = Dropout(0.2)(concat)
         fc_1 = Dense(100, name='fc-1', activation='relu')(concat_dropout)
         fc_1_bn = BatchNormalization(name='batch-norm-1')(fc_1)
@@ -110,8 +111,8 @@ class NCFModel():
 
         # Prediction from both layers
         pred_mlp = Dense(10, name='pred-mlp', activation='relu')(fc_2_dropout)
-        pred_mf = Dot([movie_vec_mf, user_vec_mf], name='pred-mf')
-        combine_mlp_mf = Concatenate([pred_mf, pred_mlp], name='combine-mlp-mf')
+        pred_mf = merge([movie_vec_mf, user_vec_mf], mode='dot', name='pred-mf')
+        combine_mlp_mf = merge([pred_mf, pred_mlp], mode='concat', name='combine-mlp-mf')
 
         # Final prediction
         result = Dense(1, name='result', activation='relu')(combine_mlp_mf)

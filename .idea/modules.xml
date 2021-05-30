@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/Federated-Deep-Learning-for-Predictive-Content-Caching.iml" filepath="$PROJECT_DIR$/.idea/Federated-Deep-Learning-for-Predictive-Content-Caching.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../dynamic-conditional-imitation-learning-carla/.idea/int-end-to-end-ad-carla-valeo.iml" filepath="$PROJECT_DIR$/../dynamic-conditional-imitation-learning-carla/.idea/int-end-to-end-ad-carla-valeo.iml" />
     </modules>
   </component>
 </project>

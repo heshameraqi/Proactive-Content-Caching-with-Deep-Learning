@@ -40,7 +40,7 @@ class SimModel:
         self.ratings = self.data.ratings['rating'].values
         # print("self.data.max_userid: ", self.data.max_userid, " / self.data.max_movieid: ", self.data.max_movieid)
 
-    def train_ncf_model(self, nb_step, cf_flag=False):
+    def train_ncf_model(self, nb_step, cf_flag=True):
         # the default model will be ncf, cf will be used instead only if specified
         len_step = floor(len(self.movies)/nb_step)
         # we cut the ratings file into multiple intervals where the model will be trained in one interval and used in the next one
