@@ -6,7 +6,7 @@ import numpy as np
 # from keras.layers import Embedding, Reshape, Merge
 # from keras.models import Sequential
 from keras.models import Model, Sequential
-from keras.layers import Embedding, Flatten, Input, Dropout, Dense, BatchNormalization, Reshape, Dot
+from keras.layers import Embedding, Flatten, Input, Dropout, Dense, BatchNormalization, Reshape, Dot, Concatenate
 
 class CFModel(Sequential):
 
