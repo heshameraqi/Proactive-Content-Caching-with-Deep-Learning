@@ -27,11 +27,13 @@ class CFModel(Sequential):
 
         super(CFModel, self).__init__(**kwargs)
 
-        # Add more layers
-
         # The Merge layer takes the dot product of user and movie latent factor vectors to return the corresponding rating.
         # self.add(dot([P.layers[-1], Q.layers[-1]], axes=1))
-        self.add(  Dot(axes=0)( [ P.layers[-1] , Q.layers[-1] ] )  )
+        self.add( tf.keras.layers.Concatenate()([P, Q]) )
+        self.add(Dropout(p_dropout))
+        self.add(Dense(k_factors, activation='relu'))
+        self.add(Dropout(p_dropout))
+        self.add(Dense(1, activation='linear'))
 
     # The rate function to predict user's rating of unrated items
     def rate(self, user_id, item_id):
