@@ -5,8 +5,8 @@
 import numpy as np
 # from keras.layers import Embedding, Reshape, Merge
 # from keras.models import Sequential
-from keras.models import Model, Sequential
-from keras.layers import Embedding, Flatten, Input, merge, Dropout, Dense, BatchNormalization, Reshape, Merge
+from tensorflow.keras.models import Model, Sequential
+from tensorflow.keras.layers import Embedding, Flatten, Input, merge, Dropout, Dense, BatchNormalization, Reshape, Merge
 
 
 class CFModel(Sequential):
