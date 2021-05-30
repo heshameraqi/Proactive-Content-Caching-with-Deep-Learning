@@ -60,7 +60,7 @@ class NCFModel():
         user_vec_mf.add(Reshape((k_factors,)))
         # MLP layers
         model_mlp = Sequential()
-        model_mlp.add(Merge([movie_vec_mlp, user_vec_mlp], mode='concat', dot_axes=1))
+        model_mlp.add(Concatenate([movie_vec_mlp, user_vec_mlp], axes=1))
         model_mlp.add(Dropout(0.2))
         model_mlp.add(Dense(100, activation='relu'))
         model_mlp.add(BatchNormalization())
@@ -72,9 +72,9 @@ class NCFModel():
 
         # Prediction from both layers
         model_mf = Sequential()
-        model_mf.add(Merge([movie_vec_mf, user_vec_mf], mode='dot', dot_axes=1))
+        model_mf.add(Dot([movie_vec_mf, user_vec_mf], axes=1))
         self.model_mlp_mf = Sequential()
-        self.model_mlp_mf.add(Merge([model_mf, model_mlp], mode='concat', dot_axes=1))
+        self.model_mlp_mf.add(Concatenate([model_mf, model_mlp], axes=1))
 
         # Final prediction
         self.model_mlp_mf.add(Dense(1, activation='relu'))
