@@ -9,4 +9,4 @@
     *   Fix the gaps in movie_id
     
 *   Dependencies:
-    *   TensorFlow==2.1.5 (For Merge)
+    *   Keras==2.1.5 (For Merge)
