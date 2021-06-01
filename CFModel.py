@@ -16,7 +16,7 @@ from keras.layers import Embedding, Flatten, Dropout, Dense, BatchNormalization,
 
 class CFModel:
     # The constructor for the class
-    def create_CF_model(self, n_users, m_items, k_factors):
+    def __init__(self, n_users, m_items, k_factors):
         inputs = Input(shape=(2))
 
         # x is the embedding layer that creates an User by latent factors matrix.
