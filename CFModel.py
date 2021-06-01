@@ -41,17 +41,11 @@ class CFModel:
         # self.add(Dropout(p_dropout))
         # self.add(Dense(1, activation='linear'))
 
-        model = Model(inputs=inputs, outputs=z)
-
-        return model
+        self.model = Model(inputs=inputs, outputs=z)
 
     # The rate function to predict user's rating of unrated items
     def rate(self, user_id, item_id):
-        return self.predict([np.array([user_id]), np.array([item_id])])[0][0]
-
-    # The rate function to predict user's rating of unrated items
-    def rate(self, user_id, item_id):
-        return self.predict([np.array([user_id]), np.array([item_id])])[0][0]
+        return self.model.predict([np.array([user_id]), np.array([item_id])])[0][0]
 
 
 class NCFModel:
@@ -133,7 +127,7 @@ class NCFModel:
         # Final prediction
         result = Dense(1, name='result', activation='relu')(combine_mlp_mf)
 
-        self.model_final = Model([user_input, movie_input], result)
+        self.model = Model([user_input, movie_input], result)
 
     def rate(self, user_id, item_id):
-        return self.model_final.predict([np.array([user_id]), np.array([item_id])])[0][0]
+        return self.model.predict([np.array([user_id]), np.array([item_id])])[0][0]

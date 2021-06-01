@@ -17,7 +17,7 @@ class SimModel:
         self.data = MovieLensData()
         # Load data and print statistics
         self.data.print_statistics()
-        self.data.remove_movie_gap()
+        # self.data.remove_movie_gap()  # TODO: uncomment this
         self.users = self.data.ratings['user_emb_id'].values
         self.movies = self.data.ratings['movie_emb_id'].values
         # self.movies = [1,2,1,2,1,2,1,2]
