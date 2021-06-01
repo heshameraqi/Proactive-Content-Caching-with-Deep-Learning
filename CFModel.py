@@ -9,41 +9,52 @@ from keras.models import Model, Sequential
 from keras.layers import Embedding, Flatten, Dropout, Dense, BatchNormalization, Reshape, Dot, dot
 import tensorflow as tf
 
+import numpy as np
+from keras.models import Model, Sequential
+from keras.layers import Embedding, Flatten, Dropout, Dense, BatchNormalization, Reshape, Dot, dot, Input
 
-class CFModel(Sequential):
 
+class CFModel:
     # The constructor for the class
-    def __init__(self, n_users, m_items, k_factors, **kwargs):
-        # P is the embedding layer that creates an User by latent factors matrix.
+    def create_CF_model(self, n_users, m_items, k_factors):
+        inputs = Input(shape=(2))
+
+        # x is the embedding layer that creates an User by latent factors matrix.
         # If the intput is a user_id, P returns the latent factor vector for that user.
-        P = Sequential()
-        P.add(Embedding(input_dim=n_users, output_dim=k_factors, input_length=1))  # input_length is the sequence length
-        P.add(Reshape((k_factors,)))
+        x = Embedding(input_dim=n_users, output_dim=k_factors, input_length=1)(inputs[:, 0])
+        # x = Reshape((-1,k_factors), name='users_reshaped')(x)
 
-        # Q is the embedding layer that creates a Movie by latent factors matrix.
+        # y is the embedding layer that creates a Movie by latent factors matrix.
         # If the input is a movie_id, Q returns the latent factor vector for that movie.
-        Q = Sequential()
-        Q.add(Embedding(input_dim=m_items, output_dim=k_factors, input_length=1))  # input_length is the sequence length
-        Q.add(Reshape((k_factors,)))
-
-        super(CFModel, self).__init__(**kwargs)
+        y = Embedding(input_dim=m_items, output_dim=k_factors, input_length=1)(inputs[:, 1])
+        # y = Reshape((-1,k_factors), name='items_reshaped')(y)
 
         # The Merge layer takes the dot product of user and movie latent factor vectors to return the corresponding rating.
+        z = Dot(axes=1)([x, y])
+
         # self.add(Merge([P, Q], mode='dot', dot_axes=1))
-        # self.add(dot([P.layers[-1], Q.layers[-1]], axes=1))
-        self.add( tf.keras.layers.Concatenate()([P, Q]) )
-        self.add(Dropout(p_dropout))
-        self.add(Dense(k_factors, activation='relu'))
-        self.add(Dropout(p_dropout))
-        self.add(Dense(1, activation='linear'))
+        # self.add(Dot(axes=1)([P.layers[-1], Q.layers[-1]]))
+
+        # self.add( tf.keras.layers.Concatenate()([P, Q]) )
+        # self.add(Dropout(p_dropout))
+        # self.add(Dense(k_factors, activation='relu'))
+        # self.add(Dropout(p_dropout))
+        # self.add(Dense(1, activation='linear'))
+
+        model = Model(inputs=inputs, outputs=z)
+
+        return model
+
+    # The rate function to predict user's rating of unrated items
+    def rate(self, user_id, item_id):
+        return self.predict([np.array([user_id]), np.array([item_id])])[0][0]
 
     # The rate function to predict user's rating of unrated items
     def rate(self, user_id, item_id):
         return self.predict([np.array([user_id]), np.array([item_id])])[0][0]
 
 
-class NCFModel():
-
+class NCFModel:
     def __init__(self, n_users, m_items, k_factors, **kwargs):
         '''
         # MLP Embeddings

@@ -7,6 +7,3 @@
     *   Concatenate user personal info to the user embedding vector & movie genera to the movie embedding vector
     *   Add caching user nodes and replace ratings to requests
     *   Fix the gaps in movie_id
-    
-*   Dependencies:
-    *   Keras==2.1.5 (For Merge)
