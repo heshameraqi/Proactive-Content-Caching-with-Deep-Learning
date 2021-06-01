@@ -45,7 +45,8 @@ class CFModel:
 
     # The rate function to predict user's rating of unrated items
     def rate(self, user_id, item_id):
-        return self.model.predict([np.array([user_id]), np.array([item_id])])[0][0]
+        input = np.transpose(np.vstack((user_id, item_id)))
+        return self.model.predict([input])[0][0]
 
 
 class NCFModel:
@@ -130,4 +131,5 @@ class NCFModel:
         self.model = Model([user_input, movie_input], result)
 
     def rate(self, user_id, item_id):
+
         return self.model.predict([np.array([user_id]), np.array([item_id])])[0][0]
