@@ -80,7 +80,7 @@ class MovieLensData:
         # movies.to_csv(os.path.join(os.getcwd(), 'data', 'ml-1m', 'movies_new.dat'), index=False, header=False, sep=':', columns=['movie_new_id', 'title', 'genres'])
         ratings = self.ratings.copy()
         # Here we add the movie_new_id by using the ones assigned in ratings
-        self.ratings['movie_new_id'] = ratings['movie_id'].apply(lambda x: movies['movie_id'][movies[movies['movie_id'] == x].index[0]])
+        self.ratings['movie_id'] = ratings['movie_id'].apply(lambda x: movies['movie_id'][movies[movies['movie_id'] == x].index[0]])
         # ratings.to_csv(os.path.join(os.getcwd(), 'data', 'ml-1m', 'ratings_new.dat'), index=False, header=False, sep=':', columns=['user_id', 'movie_new_id', 'rating', 'timestamp'])
     
     def print_statistics(self):
