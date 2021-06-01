@@ -7,18 +7,8 @@ from data import MovieLensData
 import math
 from keras.callbacks import Callback, EarlyStopping, ModelCheckpoint
 from CFModel import CFModel, NCFModel  # Import Collaborative Filtering model architecture
-import numpy as np
-import matplotlib.pyplot as plt
-from keras import backend as K
-import pandas as pd
 from math import floor
-# Use GPU for Kerasimport tensorflow as tf
-import keras
-import tensorflow as tf
-# config = tf.ConfigProto(device_count={'GPU':1, 'CPU':56})
-# config = tf.ConfigProto()
-# sess = tf.Session(config=config)
-# keras.backend.set_session(sess)
+import numpy as np
 
 
 class SimModel:
@@ -27,12 +17,7 @@ class SimModel:
         self.data = MovieLensData()
         # Load data and print statistics
         self.data.print_statistics()
-        # self.data.data_movie_gap()
-        # Shuffle data
-        # shuffled_ratings = self.data.ratings.sample(frac=1., random_state=50)
-        # self.users = shuffled_ratings['user_emb_id'].values
-        # self.movies = shuffled_ratings['movie_emb_id'].values
-        # self.ratings = shuffled_ratings['rating'].values
+        self.data.remove_movie_gap()
         self.users = self.data.ratings['user_emb_id'].values
         self.movies = self.data.ratings['movie_emb_id'].values
         # self.movies = [1,2,1,2,1,2,1,2]
@@ -63,7 +48,8 @@ class SimModel:
             # Callbacks monitor the validation loss, save the model weights each time the validation loss has improved
             callbacks = [EarlyStopping('val_loss', patience=2), ModelCheckpoint(f'weights{i+1}.h5', save_best_only=True)]
             # Train the model: Use 30 epochs, 90% training data, 10% validation data
-            history = model.fit([par_users, par_movies], par_ratings, nb_epoch=30, validation_split=.1, shuffle=True, batch_size=500, verbose=2, callbacks=callbacks)
+            inputs = np.transpose(np.vstack((par_users, par_movies)))
+            history = model.fit(inputs, par_ratings, nb_epoch=30, validation_split=.1, shuffle=True, batch_size=500, verbose=2, callbacks=callbacks)
             # Plot training and validation RMSE
             # loss = pd.DataFrame({'epoch': [ i + 1 for i in history.epoch ], 'training': [ math.sqrt(loss) for loss in history.history['loss'] ], 'validation': [ math.sqrt(loss) for loss in history.history['val_loss'] ]})
             # ax = loss.ix[:,:].plot(x='epoch', figsize={7,10}, grid=True)

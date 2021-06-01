@@ -72,16 +72,16 @@ class MovieLensData:
         movies = pd.read_csv('movies.csv', sep='\t', encoding='latin-1', usecols=['movie_id', 'title', 'genres'])"""
 
     # To avoid the gap in movies_ids by creating a new file for movies.dat and ratings.dat
-    def data_movie_gap(self):
+    def remove_movie_gap(self):
         movies = self.movies.copy()
         movies_new_ids = list(range(1, (movies.shape[0])+1))  # Ids starting from one
         # movies_new_ids = list(range(movies.shape[0]))  # Ids starting from zero
-        movies['movie_new_id'] = movies_new_ids
-        movies.to_csv(os.path.join(os.getcwd(), 'data', 'ml-1m', 'movies_new.dat'), index=False, header=False, sep=':', columns=['movie_new_id', 'title', 'genres'])
+        self.movies['movie_new_id'] = movies_new_ids
+        # movies.to_csv(os.path.join(os.getcwd(), 'data', 'ml-1m', 'movies_new.dat'), index=False, header=False, sep=':', columns=['movie_new_id', 'title', 'genres'])
         ratings = self.ratings.copy()
         # Here we add the movie_new_id by using the ones assigned in ratings
-        ratings['movie_new_id'] = ratings['movie_id'].apply(lambda x: movies['movie_new_id'][movies[movies['movie_id'] == x].index[0]])
-        ratings.to_csv(os.path.join(os.getcwd(), 'data', 'ml-1m', 'ratings_new.dat'), index=False, header=False, sep=':', columns=['user_id', 'movie_new_id', 'rating', 'timestamp'])
+        self.ratings['movie_new_id'] = ratings['movie_id'].apply(lambda x: movies['movie_new_id'][movies[movies['movie_id'] == x].index[0]])
+        # ratings.to_csv(os.path.join(os.getcwd(), 'data', 'ml-1m', 'ratings_new.dat'), index=False, header=False, sep=':', columns=['user_id', 'movie_new_id', 'rating', 'timestamp'])
     
     def print_statistics(self):
         # Print first 5 samples
