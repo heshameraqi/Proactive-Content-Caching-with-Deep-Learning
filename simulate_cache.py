@@ -91,6 +91,57 @@ class SimModel:
             # print(recommended_movies_list)
         return rec_movies_list_all
 
+    def sim_ncf_cache(self, network):
+        hit_g, miss_g = 0, 0
+        hit_cache, miss_cache, hit_ratio_caches_aux, hit_ratio_caches = ([0]*network.nb_nodes for _ in range(4))
+        len_step = floor(len(self.movies)/nb_step)
+        for i in range(0, nb_step):
+            inf_index = len_step * i
+            rec_movies_list_all = self.apply_ncf_model(f'weights{i + 1}.h5')  # contains the recommended movies for each user
+            flat_rec_list = list(dict.fromkeys([item for sublist in rec_movies_list_all for item in sublist]))  # flat list of recommended movies
+            if i == (nb_step - 1):
+                sup_index = len(self.movies)  # in case some ratings were left when the file was divided into multiple intervals
+            else:
+                sup_index = len_step * (i + 1)
+            par_users = self.users[inf_index:sup_index]  # subset (partial) of users relative to the current range of requests
+            par_movies = self.movies[inf_index:sup_index]
+            if i == 0:
+                hit_g_aux, miss_g_aux, hit_cache_aux, miss_cache_aux = network.hit_ratio_multi_lru(par_movies)
+                hit_ratio_global_aux = float(hit_g_aux / (hit_g_aux + miss_g_aux))
+                hit_ratio_avg_aux = float(sum(hit_cache_aux) / (sum(hit_cache_aux) + sum(miss_cache_aux)))
+                for j in range(0, network.nb_nodes):
+                    if hit_cache_aux[j] == 0:
+                        hit_ratio_caches_aux[j] = 0
+                    else:
+                        hit_ratio_caches_aux[j] = float(hit_cache_aux[j] / (hit_cache_aux[j] + miss_cache_aux[j]))
+                print(f"on step {i+1} - hit_ratio_global: ", hit_ratio_global_aux, " / hit_ragio_avg: ", hit_ratio_avg_aux, " / hit_ratio_caches: ", hit_ratio_caches_aux)
+                hit_g += hit_g_aux
+                miss_g += miss_g_aux
+                hit_cache = [x + y for x, y in zip(hit_cache, hit_cache_aux)]
+                miss_cache = [x + y for x, y in zip(miss_cache, miss_cache_aux)]
+            else:
+                if i == 1:
+                    prev_cache = network.get_cache()
+                    network.cache_init(prev_cache)
+                # hit_ratio_global_aux, hit_ratio_caches_aux = network.hit_ratio_multi_lru_cfl(par_movies, par_users, flat_rec_list)
+                hit_g_aux, miss_g_aux, hit_cache_aux, miss_cache_aux = network.hit_ratio_multi_lru(par_movies)
+                hit_ratio_global_aux = float(hit_g_aux / (hit_g_aux + miss_g_aux))
+                hit_ratio_avg_aux = float(sum(hit_cache_aux) / (sum(hit_cache_aux) + sum(miss_cache_aux)))
+                for j in range(0, network.nb_nodes):
+                    if hit_cache_aux[j] == 0:
+                        hit_ratio_caches_aux[j] = 0
+                    else:
+                        hit_ratio_caches_aux[j] = float(hit_cache_aux[j] / (hit_cache_aux[j] + miss_cache_aux[j]))
+                print(f"on step {i + 1} - hit_ratio_global: ", hit_ratio_global_aux, " / hit_ragio_avg: ", hit_ratio_avg_aux, " / hit_ratio_caches: ", hit_ratio_caches_aux)
+                hit_g += hit_g_aux
+                miss_g += miss_g_aux
+                hit_cache = [x + y for x, y in zip(hit_cache, hit_cache_aux)]
+                miss_cache = [x + y for x, y in zip(miss_cache, miss_cache_aux)]
+        hit_ratio_global = float(hit_g / (hit_g + miss_g))
+        hit_ratio_avg = float(sum(hit_cache) / (sum(hit_cache) + sum(miss_cache)))
+        for j in range(0, network.nb_nodes):
+            hit_ratio_caches[j] = float(hit_cache[j] / (hit_cache[j] + miss_cache[j]))
+        return hit_ratio_global, hit_ratio_avg, hit_ratio_caches
 
 if __name__ == "__main__":
     # Configurations
@@ -108,3 +159,6 @@ if __name__ == "__main__":
         rec_movies_list_all = sim_model.apply_ncf_model(f'weights{i + 1}.h5')  # contains the recommended movies for each user
         flat_rec_list = list(dict.fromkeys([item for sublist in rec_movies_list_all for item in sublist]))  # flat list of recommended movies
         # print(rec_movies_list_all)'''
+    network = Cache_Structure.MultiCache(cache_size, 'network.txt', True)
+    hit_ratio_global, hit_ratio_avg, hit_ratio_caches = sim_model.sim_ncf_cache(network)
+    print(f"final results - hit_ratio_global: {hit_ratio_global}/ hit_ratio_avg: {hit_ratio_avg}/ hit_ratio_caches: {hit_ratio_caches}")
