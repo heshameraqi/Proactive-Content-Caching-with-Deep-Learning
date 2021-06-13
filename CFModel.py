@@ -24,16 +24,12 @@ class CFModel:
         x = Embedding(input_dim=n_users, output_dim=k_factors, input_length=1)(inputs[:, 0])
         x = Dense(50, activation='relu')(x)
         x = Dropout(0.2)(x)
-        x = Dense(20, activation='relu')(x)
-        x = Dropout(0.2)(x)
         # x = Reshape((-1,k_factors), name='users_reshaped')(x)
 
         # y is the embedding layer that creates a Movie by latent factors matrix.
         # If the input is a movie_id, Q returns the latent factor vector for that movie.
         y = Embedding(input_dim=m_items, output_dim=k_factors, input_length=1)(inputs[:, 1])
         y = Dense(50, activation='relu')(y)
-        y = Dropout(0.2)(y)
-        y = Dense(20, activation='relu')(y)
         y = Dropout(0.2)(y)
         # y = Reshape((-1,k_factors), name='items_reshaped')(y)
 
