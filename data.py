@@ -26,14 +26,14 @@ class MovieLensData:
 
         # Specify the data folders
         USER_DATA_FILE = 'users.dat'
-        MOVIE_DATA_FILE = 'movies.dat'
-        # MOVIE_DATA_FILE = 'movies_new.dat'  # movies file without gap in ids
-        RATING_DATA_FILE = 'ratings.dat'
-        # RATING_DATA_FILE = 'ratings_new.dat'  # ratings file without gap in ids
+        # MOVIE_DATA_FILE = 'movies.dat'
+        MOVIE_DATA_FILE = 'movies_new.dat'  # movies file without gap in ids
+        # RATING_DATA_FILE = 'ratings.dat'
+        RATING_DATA_FILE = 'ratings_new.dat'  # ratings file without gap in ids
         # Read the Ratings File
-        self.ratings = pd.read_csv(os.path.join(MOVIELENS_DIR, RATING_DATA_FILE), sep='::', engine='python', encoding='latin-1', names=['user_id', 'movie_id', 'rating', 'timestamp'])
-        # self.ratings = pd.read_csv(os.path.join(MOVIELENS_DIR, RATING_DATA_FILE), sep=':', engine='python', encoding='latin-1', names=['user_id', 'movie_id', 'rating', 'timestamp'])
-        # self.ratings = self.ratings.sort_values(by='timestamp', ascending=True)  # sorting requests/ratings by timestamp
+        # self.ratings = pd.read_csv(os.path.join(MOVIELENS_DIR, RATING_DATA_FILE), sep='::', engine='python', encoding='latin-1', names=['user_id', 'movie_id', 'rating', 'timestamp'])
+        self.ratings = pd.read_csv(os.path.join(MOVIELENS_DIR, RATING_DATA_FILE), sep=':', engine='python', encoding='latin-1', names=['user_id', 'movie_id', 'rating', 'timestamp'])
+        self.ratings = self.ratings.sort_values(by='timestamp', ascending=True)  # sorting requests/ratings by timestamp
         # Process self.ratings dataframe for Keras Deep Learning model (Add colums: user_emb_id=user_id-1 & movie_emb_id=movie_id-1)
         self.ratings['user_emb_id'] = self.ratings['user_id'] - 1
         self.ratings['movie_emb_id'] = self.ratings['movie_id'] - 1
@@ -44,8 +44,8 @@ class MovieLensData:
         self.users['occ_desc'] = self.users['occupation'].apply(lambda x: OCCUPATIONS[x])
 
         # Read the Movies File
-        self.movies = pd.read_csv(os.path.join(MOVIELENS_DIR, MOVIE_DATA_FILE), sep='::', engine='python', encoding='latin-1', names=['movie_id', 'title', 'genres'])
-        # self.movies = pd.read_csv(os.path.join(MOVIELENS_DIR, MOVIE_DATA_FILE), sep=':', engine='python', encoding='latin-1', names=['movie_id', 'title', 'genres'])
+        # self.movies = pd.read_csv(os.path.join(MOVIELENS_DIR, MOVIE_DATA_FILE), sep='::', engine='python', encoding='latin-1', names=['movie_id', 'title', 'genres'])
+        self.movies = pd.read_csv(os.path.join(MOVIELENS_DIR, MOVIE_DATA_FILE), sep=':', engine='python', encoding='latin-1', names=['movie_id', 'title', 'genres'])
 
         # Set max_userid & max_movieid to the maximum user_id & movie_id in the self.ratings
         self.max_userid = self.ratings['user_id'].drop_duplicates().max()
