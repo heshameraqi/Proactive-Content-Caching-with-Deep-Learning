@@ -11,7 +11,7 @@ import tensorflow as tf
 
 import numpy as np
 from keras.models import Model, Sequential
-from keras.layers import Embedding, Flatten, Dropout, Dense, BatchNormalization, Reshape, Dot, dot, Input, merge, Merge
+from keras.layers import Embedding, Flatten, Dropout, Dense, BatchNormalization, Reshape, Dot, dot, Input, merge, Concatenate
 
 
 class CFModel:
@@ -115,7 +115,8 @@ class NCFModel:
         user_vec_mf = Flatten(name='flatten-user-mf')(user_embedding_mf)
 
         # MLP layers
-        concat = merge([movie_vec_mlp, user_vec_mlp], mode='concat', name='concat')
+        # concat = merge([movie_vec_mlp, user_vec_mlp], mode='concat', name='concat')
+        concat = Concatenate()([movie_vec_mlp, user_vec_mlp])
         concat_dropout = Dropout(0.2)(concat)
         fc_1 = Dense(100, name='fc-1', activation='relu')(concat_dropout)
         fc_1_bn = BatchNormalization(name='batch-norm-1')(fc_1)
@@ -126,9 +127,11 @@ class NCFModel:
 
         # Prediction from both layers
         pred_mlp = Dense(10, name='pred-mlp', activation='relu')(fc_2_dropout)
-        pred_mf = merge([movie_vec_mf, user_vec_mf], mode='dot', name='pred-mf')
-        combine_mlp_mf = merge([pred_mf, pred_mlp], mode='concat', name='combine-mlp-mf')
-
+        # pred_mf = merge([movie_vec_mf, user_vec_mf], mode='dot', name='pred-mf')
+        # combine_mlp_mf = merge([pred_mf, pred_mlp], mode='concat', name='combine-mlp-mf')
+        pred_mf = Dot(axes=1)([movie_vec_mf, user_vec_mf])
+        combine_mlp_mf = Concatenate()([pred_mf, pred_mlp])
+        
         # Final prediction
         result = Dense(1, name='result', activation='relu')(combine_mlp_mf)
 
