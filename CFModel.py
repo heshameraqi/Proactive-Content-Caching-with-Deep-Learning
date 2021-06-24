@@ -11,7 +11,7 @@ import tensorflow as tf
 
 import numpy as np
 from keras.models import Model, Sequential
-from keras.layers import Embedding, Flatten, Dropout, Dense, BatchNormalization, Reshape, Dot, dot, Input
+from keras.layers import Embedding, Flatten, Dropout, Dense, BatchNormalization, Reshape, Dot, dot, Input, merge, Merge
 
 
 class CFModel:
