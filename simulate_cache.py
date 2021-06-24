@@ -25,7 +25,7 @@ class SimModel:
         self.ratings = self.data.ratings['rating'].values
         # print("self.data.max_userid: ", self.data.max_userid, " / self.data.max_movieid: ", self.data.max_movieid)
 
-    def train_ncf_model(self, nb_step, cf_flag=True):
+    def train_ncf_model(self, nb_step, cf_flag=False):
         # the default model will be ncf, cf will be used instead only if specified
         len_step = floor(len(self.movies)/nb_step)
         # we cut the ratings file into multiple intervals where the model will be trained in one interval and used in the next one
@@ -49,7 +49,8 @@ class SimModel:
             callbacks = [EarlyStopping('val_loss', patience=10), ModelCheckpoint(f'weights{i+1}.h5', save_best_only=True)]
             # Train the model: Use 30 epochs, 90% training data, 10% validation data
             inputs = np.transpose(np.vstack((par_users, par_movies)))
-            history = model.fit(inputs, par_ratings, epochs=30, validation_split=.1, shuffle=True, batch_size=500, verbose=2, callbacks=callbacks)
+            # history = model.fit(inputs, par_ratings, epochs=30, validation_split=.1, shuffle=True, batch_size=500, verbose=2, callbacks=callbacks)
+            history = model.fit([par_users, par_movies], par_ratings, epochs=60, validation_split=.1, shuffle=True, batch_size=500, verbose=2, callbacks=callbacks)
             # Plot training and validation RMSE
             # loss = pd.DataFrame({'epoch': [ i + 1 for i in history.epoch ], 'training': [ math.sqrt(loss) for loss in history.history['loss'] ], 'validation': [ math.sqrt(loss) for loss in history.history['val_loss'] ]})
             # ax = loss.ix[:,:].plot(x='epoch', figsize={7,10}, grid=True)
@@ -59,7 +60,7 @@ class SimModel:
             min_val_loss, idx = min((val, idx) for (idx, val) in enumerate(history.history['val_loss']))
             print('Minimum RMSE at epoch', '{:d}'.format(idx + 1), '=', '{:.4f}'.format(math.sqrt(min_val_loss)))
 
-    def apply_ncf_model(self, weights_file, cf_flag=True):
+    def apply_ncf_model(self, weights_file, cf_flag=False):
         # the default model will be ncf, cf will be used instead only if specified
         if cf_flag:
             trained_model = CFModel(self.data.max_userid, self.data.max_movieid, K_FACTORS)
