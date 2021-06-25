@@ -43,10 +43,11 @@ class SimModel:
             par_ratings = self.ratings[inf_index:sup_index]
             if cf_flag:
                 # model = CFModel(self.data.max_userid, self.data.max_movieid, K_FACTORS).model
-                model = CFModel(max(par_users)+1, max(par_movies)+1, K_FACTORS)
+                model_used = CFModel(max(par_users)+1, max(par_movies)+1, K_FACTORS)
             else:
                 # model = NCFModel(self.data.max_userid, self.data.max_movieid, K_FACTORS).model
-                model = NCFModel(max(par_users)+1, max(par_movies)+1, K_FACTORS)
+                model_used = NCFModel(max(par_users)+1, max(par_movies)+1, K_FACTORS)
+            model = model_used.model
             model.compile(loss='mse', optimizer='adamax')
             # Callbacks monitor the validation loss, save the model weights each time the validation loss has improved
             callbacks = [EarlyStopping('val_loss', patience=10), ModelCheckpoint(f'weights{i+1}.h5', save_best_only=True)]
