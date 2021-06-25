@@ -9,6 +9,7 @@ from keras.callbacks import Callback, EarlyStopping, ModelCheckpoint
 from CFModel import CFModel, NCFModel  # Import Collaborative Filtering model architecture
 from math import floor
 import numpy as np
+import Cache_Structure
 
 
 class SimModel:
@@ -41,9 +42,11 @@ class SimModel:
             par_movies = self.movies[inf_index:sup_index]
             par_ratings = self.ratings[inf_index:sup_index]
             if cf_flag:
-                model = CFModel(self.data.max_userid, self.data.max_movieid, K_FACTORS).model
+                # model = CFModel(self.data.max_userid, self.data.max_movieid, K_FACTORS).model
+                model = CFModel(max(par_users)+1, max(par_movies)+1, K_FACTORS)
             else:
-                model = NCFModel(self.data.max_userid, self.data.max_movieid, K_FACTORS).model
+                # model = NCFModel(self.data.max_userid, self.data.max_movieid, K_FACTORS).model
+                model = NCFModel(max(par_users)+1, max(par_movies)+1, K_FACTORS)
             model.compile(loss='mse', optimizer='adamax')
             # Callbacks monitor the validation loss, save the model weights each time the validation loss has improved
             callbacks = [EarlyStopping('val_loss', patience=10), ModelCheckpoint(f'weights{i+1}.h5', save_best_only=True)]
@@ -60,20 +63,23 @@ class SimModel:
             min_val_loss, idx = min((val, idx) for (idx, val) in enumerate(history.history['val_loss']))
             print('Minimum RMSE at epoch', '{:d}'.format(idx + 1), '=', '{:.4f}'.format(math.sqrt(min_val_loss)))
 
-    def apply_ncf_model(self, weights_file, cf_flag=False):
+    def apply_ncf_model(self, weights_file, sub_users, max_user_id, max_movie_id, cf_flag=False):
         # the default model will be ncf, cf will be used instead only if specified
         if cf_flag:
-            trained_model = CFModel(self.data.max_userid, self.data.max_movieid, K_FACTORS)
+            # trained_model = CFModel(self.data.max_userid, self.data.max_movieid, K_FACTORS)
+            trained_model = CFModel(max_user_id, max_movie_id, K_FACTORS)
             # Load weights
             trained_model.model.load_weights(weights_file)
         else:
-            trained_model = NCFModel(self.data.max_userid, self.data.max_movieid, K_FACTORS)
+            # trained_model = NCFModel(self.data.max_userid, self.data.max_movieid, K_FACTORS)
+            trained_model = NCFModel(max_user_id, max_movie_id, K_FACTORS)
             trained_model.model.load_weights(weights_file)
         rec_movies_list_all = list()
         # If a movie is recommended for more than X (threshold) users, it will be cached
         # For every user TODO: should be every user in the past stages only not future
         # TODO: Batch the data to the model
-        for i in range(1, len(self.users)+1):
+        # for i in range(1, len(self.users)+1):
+        for i in sub_users:
             # Predict user i ratings (enter user and his recommended movies --> get rating)
             # print("data.ratings: \n", data.ratings)
             # user_ratings = self.data.ratings[self.data.ratings['user_id'] == i][['user_id', 'movie_id', 'rating']]
@@ -98,13 +104,11 @@ class SimModel:
         len_step = floor(len(self.movies)/nb_step)
         for i in range(0, nb_step):
             inf_index = len_step * i
-            rec_movies_list_all = self.apply_ncf_model(f'weights{i + 1}.h5')  # contains the recommended movies for each user
-            flat_rec_list = list(dict.fromkeys([item for sublist in rec_movies_list_all for item in sublist]))  # flat list of recommended movies
             if i == (nb_step - 1):
                 sup_index = len(self.movies)  # in case some ratings were left when the file was divided into multiple intervals
             else:
                 sup_index = len_step * (i + 1)
-            par_users = self.users[inf_index:sup_index]  # subset (partial) of users relative to the current range of requests
+            print("=============== Training stage %d [%d, %d] ===============" % (i+1, inf_index, sup_index))
             par_movies = self.movies[inf_index:sup_index]
             if i == 0:
                 hit_g_aux, miss_g_aux, hit_cache_aux, miss_cache_aux = network.hit_ratio_multi_lru(par_movies)
@@ -115,17 +119,20 @@ class SimModel:
                         hit_ratio_caches_aux[j] = 0
                     else:
                         hit_ratio_caches_aux[j] = float(hit_cache_aux[j] / (hit_cache_aux[j] + miss_cache_aux[j]))
-                print(f"on step {i+1} - hit_ratio_global: ", hit_ratio_global_aux, " / hit_ragio_avg: ", hit_ratio_avg_aux, " / hit_ratio_caches: ", hit_ratio_caches_aux)
+                print(f"on step {i+1} - hit_ratio_global: ", hit_ratio_global_aux*100, " / hit_ragio_avg: ", hit_ratio_avg_aux*100, " / hit_ratio_caches: ", hit_ratio_caches_aux[0]*100)
                 hit_g += hit_g_aux
                 miss_g += miss_g_aux
                 hit_cache = [x + y for x, y in zip(hit_cache, hit_cache_aux)]
                 miss_cache = [x + y for x, y in zip(miss_cache, miss_cache_aux)]
             else:
+                sub_users = self.data.ratings['user_id'][inf_index:sup_index].drop_duplicates().values
+                rec_movies_list_all = self.apply_ncf_model(f'weights{i}.h5', sub_users, max(sub_users)+1, max(par_movies)+1)  # contains the recommended movies for each user
+                flat_rec_list = list(dict.fromkeys([item for sublist in rec_movies_list_all for item in sublist]))  # flat list of recommended movies
                 if i == 1:
                     prev_cache = network.get_cache()
                     network.cache_init(prev_cache)
-                # hit_ratio_global_aux, hit_ratio_caches_aux = network.hit_ratio_multi_lru_cfl(par_movies, par_users, flat_rec_list)
-                hit_g_aux, miss_g_aux, hit_cache_aux, miss_cache_aux = network.hit_ratio_multi_lru(par_movies)
+                hit_g_aux, miss_g_aux, hit_cache_aux, miss_cache_aux = network.hit_ratio_multi_lru_cfl(par_movies, sub_users, flat_rec_list)
+                # hit_g_aux, miss_g_aux, hit_cache_aux, miss_cache_aux = network.hit_ratio_multi_lru(par_movies)
                 hit_ratio_global_aux = float(hit_g_aux / (hit_g_aux + miss_g_aux))
                 hit_ratio_avg_aux = float(sum(hit_cache_aux) / (sum(hit_cache_aux) + sum(miss_cache_aux)))
                 for j in range(0, network.nb_nodes):
@@ -133,7 +140,7 @@ class SimModel:
                         hit_ratio_caches_aux[j] = 0
                     else:
                         hit_ratio_caches_aux[j] = float(hit_cache_aux[j] / (hit_cache_aux[j] + miss_cache_aux[j]))
-                print(f"on step {i + 1} - hit_ratio_global: ", hit_ratio_global_aux, " / hit_ragio_avg: ", hit_ratio_avg_aux, " / hit_ratio_caches: ", hit_ratio_caches_aux)
+                print(f"on step {i + 1} - hit_ratio_global: ", hit_ratio_global_aux*100, " / hit_ragio_avg: ", hit_ratio_avg_aux*100, " / hit_ratio_caches: ", hit_ratio_caches_aux[0]*100)
                 hit_g += hit_g_aux
                 miss_g += miss_g_aux
                 hit_cache = [x + y for x, y in zip(hit_cache, hit_cache_aux)]
@@ -152,7 +159,7 @@ if __name__ == "__main__":
     # feedback = 'explicit'  # explicit or implicit
     K_FACTORS = 100
     nb_step = 4
-    # cache_size = 10
+    cache_size = 100
     sim_model = SimModel(K_FACTORS)
     sim_model.train_ncf_model(nb_step)
     '''for i in range(0, nb_step):
@@ -162,4 +169,4 @@ if __name__ == "__main__":
         # print(rec_movies_list_all)'''
     network = Cache_Structure.MultiCache(cache_size, 'network.txt', True)
     hit_ratio_global, hit_ratio_avg, hit_ratio_caches = sim_model.sim_ncf_cache(network)
-    print(f"final results - hit_ratio_global: {hit_ratio_global}/ hit_ratio_avg: {hit_ratio_avg}/ hit_ratio_caches: {hit_ratio_caches}")
+    print(f"final results - hit_ratio_global: {hit_ratio_global*100}/ hit_ratio_avg: {hit_ratio_avg*100}/ hit_ratio_caches: {hit_ratio_caches[0]*100}")
