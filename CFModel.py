@@ -101,8 +101,13 @@ class NCFModel:
         '''
 
         # Define inputs
-        movie_input = Input(shape=[1], name='movie-input')
-        user_input = Input(shape=[1], name='user-input')
+        inputs = Input(shape=(2))
+        
+        # movie_input = Input(shape=[1], name='movie-input')
+        # user_input = Input(shape=[1], name='user-input')
+
+        user_input = inputs[:, 0]
+        movie_input = inputs[:, 1]
 
         # MLP Embeddings
         movie_embedding_mlp = Embedding(m_items, k_factors, name='movie-embedding-mlp')(movie_input)
