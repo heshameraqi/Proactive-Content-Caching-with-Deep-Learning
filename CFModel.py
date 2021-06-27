@@ -34,7 +34,11 @@ class CFModel:
         # y = Reshape((-1,k_factors), name='items_reshaped')(y)
 
         # The Merge layer takes the dot product of user and movie latent factor vectors to return the corresponding rating.
-        z = Dot(axes=1)([x, y])
+        # z = Dot(axes=1)([x, y])
+        
+        z = Concatenate()([x, y])
+        z = Dense(10, name='result', activation='relu')(z)
+        z = Dense(1, name='result', activation='relu')(z)
 
         # self.add(Merge([P, Q], mode='dot', dot_axes=1))
         # self.add(Dot(axes=1)([P.layers[-1], Q.layers[-1]]))
