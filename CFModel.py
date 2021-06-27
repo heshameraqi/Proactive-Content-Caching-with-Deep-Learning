@@ -106,21 +106,18 @@ class NCFModel:
         # movie_input = Input(shape=[1], name='movie-input')
         # user_input = Input(shape=[1], name='user-input')
 
-        user_input = inputs[:, 0]
-        movie_input = inputs[:, 1]
-
         # MLP Embeddings
-        movie_embedding_mlp = Embedding(m_items, k_factors, name='movie-embedding-mlp')(movie_input)
+        movie_embedding_mlp = Embedding(m_items, k_factors, name='movie-embedding-mlp')(inputs[:, 1])
         movie_vec_mlp = Flatten(name='flatten-movie-mlp')(movie_embedding_mlp)
 
-        user_embedding_mlp = Embedding(n_users, k_factors, name='user-embedding-mlp')(user_input)
+        user_embedding_mlp = Embedding(n_users, k_factors, name='user-embedding-mlp')(inputs[:, 0])
         user_vec_mlp = Flatten(name='flatten-user-mlp')(user_embedding_mlp)
 
         # MF Embeddings
-        movie_embedding_mf = Embedding(m_items, k_factors, name='movie-embedding-mf')(movie_input)
+        movie_embedding_mf = Embedding(m_items, k_factors, name='movie-embedding-mf')(inputs[:, 1])
         movie_vec_mf = Flatten(name='flatten-movie-mf')(movie_embedding_mf)
 
-        user_embedding_mf = Embedding(n_users, k_factors, name='user-embedding-mf')(user_input)
+        user_embedding_mf = Embedding(n_users, k_factors, name='user-embedding-mf')(inputs[:, 0])
         user_vec_mf = Flatten(name='flatten-user-mf')(user_embedding_mf)
 
         # MLP layers
