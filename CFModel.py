@@ -58,7 +58,7 @@ class CFModel:
 
 
 class NCFModel:
-    def __init__(self, n_users, m_items, k_factors, **kwargs):
+    def __init__(self, n_users, m_items, k_factors):
         '''
         # MLP Embeddings
         movie_vec_mlp = Sequential()
@@ -144,7 +144,9 @@ class NCFModel:
         # Final prediction
         result = Dense(1, name='result', activation='relu')(combine_mlp_mf)
 
-        self.model = Model([user_input, movie_input], result)
+        # self.model = Model([user_input, movie_input], result)
+        self.model = Model(inputs=inputs, outputs=result)
 
     def rate(self, user_id, item_id):
-        return self.model.predict([np.array([user_id]), np.array([item_id])])[0][0]
+        return self.model.predict([[user_id, item_id]])[0][0]
+        # return self.model.predict([np.array([user_id]), np.array([item_id])])[0][0]
