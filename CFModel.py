@@ -37,8 +37,8 @@ class CFModel:
         # z = Dot(axes=1)([x, y])
         
         z = Concatenate()([x, y])
-        z = Dense(10, name='result', activation='relu')(z)
-        z = Dense(1, name='result', activation='relu')(z)
+        z = Dense(10, activation='relu')(z)
+        z = Dense(1, activation='relu')(z)
 
         # self.add(Merge([P, Q], mode='dot', dot_axes=1))
         # self.add(Dot(axes=1)([P.layers[-1], Q.layers[-1]]))
