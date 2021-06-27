@@ -101,7 +101,7 @@ class NCFModel:
         '''
 
         # Define inputs
-        inputs = Input(shape=(2))
+        inputs = Input(shape=(2), name='input-layer')
         
         # movie_input = Input(shape=[1], name='movie-input')
         # user_input = Input(shape=[1], name='user-input')
