@@ -64,17 +64,15 @@ class SimModel:
             min_val_loss, idx = min((val, idx) for (idx, val) in enumerate(history.history['val_loss']))
             print('Minimum RMSE at epoch', '{:d}'.format(idx + 1), '=', '{:.4f}'.format(math.sqrt(min_val_loss)))
 
-    def apply_ncf_model(self, weights_file, sub_users, max_user_id, max_movie_id, cf_flag=False):
+    def apply_ncf_model(self, weights_file, sub_users, par_data_ratings, max_user_id, max_movie_id, cf_flag=False):
         # the default model will be ncf, cf will be used instead only if specified
         if cf_flag:
             # trained_model = CFModel(self.data.max_userid, self.data.max_movieid, K_FACTORS)
             trained_model = CFModel(max_user_id, max_movie_id, K_FACTORS)
-            # Load weights
-            trained_model.model.load_weights(weights_file)
         else:
             # trained_model = NCFModel(self.data.max_userid, self.data.max_movieid, K_FACTORS)
             trained_model = NCFModel(max_user_id, max_movie_id, K_FACTORS)
-            trained_model.model.load_weights(weights_file)
+        trained_model.model.load_weights(weights_file)
         rec_movies_list_all = list()
         # If a movie is recommended for more than X (threshold) users, it will be cached
         # For every user TODO: should be every user in the past stages only not future
@@ -89,8 +87,8 @@ class SimModel:
             # print(user_ratings)
             # Recommend user items (enter user and all movies --> get rating and sort them by best)
             # Remove from data.ratings the movies already rated/requested by the user and predict from the list of movies not yet rated
-            user_ratings = self.data.ratings[self.data.ratings['user_id'] == i][['user_id', 'movie_id', 'rating']]
-            recommendations = self.data.ratings[self.data.ratings['movie_id'].isin(user_ratings['movie_id']) == False][['movie_id']].drop_duplicates()
+            user_ratings = par_data_ratings[par_data_ratings['user_id'] == i][['user_id', 'movie_id', 'rating']]
+            recommendations = par_data_ratings[par_data_ratings['movie_id'].isin(user_ratings['movie_id']) == False][['movie_id']].drop_duplicates()
             recommendations['prediction'] = recommendations.apply(lambda x: trained_model.rate(i, x['movie_id']), axis=1)
             recommendations = recommendations.sort_values(by='prediction', ascending=False).merge(self.data.movies, on='movie_id', how='inner', suffixes=['_u', '_m']).head(20)
             # print(recommendations)
@@ -111,6 +109,10 @@ class SimModel:
                 sup_index = len_step * (i + 1)
             print("=============== Training stage %d [%d, %d] ===============" % (i+1, inf_index, sup_index))
             par_movies = self.movies[inf_index:sup_index]
+            par_users = self.users[inf_index:sup_index]
+            par_data_ratings = self.data.ratings[inf_index:sup_index]
+            sub_users = self.data.ratings['user_id'][inf_index:sup_index].drop_duplicates().values
+            flat_rec_list = list()
             if i == 0:
                 hit_g_aux, miss_g_aux, hit_cache_aux, miss_cache_aux = network.hit_ratio_multi_lru(par_movies)
                 hit_ratio_global_aux = float(hit_g_aux / (hit_g_aux + miss_g_aux))
@@ -125,9 +127,12 @@ class SimModel:
                 miss_g += miss_g_aux
                 hit_cache = [x + y for x, y in zip(hit_cache, hit_cache_aux)]
                 miss_cache = [x + y for x, y in zip(miss_cache, miss_cache_aux)]
+                rec_movies_list_all = self.apply_ncf_model(f'weights{i+1}.h5', sub_users, par_data_ratings, max(par_users)+1, max(par_movies)+1) # 
+                flat_rec_list = list(dict.fromkeys([item for sublist in rec_movies_list_all for item in sublist]))  # flat list of recommended movies
             else:
                 sub_users = self.data.ratings['user_id'][inf_index:sup_index].drop_duplicates().values
-                rec_movies_list_all = self.apply_ncf_model(f'weights{i}.h5', sub_users, max(sub_users)+1, max(par_movies)+1)  # contains the recommended movies for each user
+                # rec_movies_list_all: contains the recommended movies for each user
+                rec_movies_list_all = self.apply_ncf_model(f'weights{i}.h5', sub_users, max(sub_users)+1, max(par_movies)+1)
                 flat_rec_list = list(dict.fromkeys([item for sublist in rec_movies_list_all for item in sublist]))  # flat list of recommended movies
                 if i == 1:
                     prev_cache = network.get_cache()
@@ -146,6 +151,8 @@ class SimModel:
                 miss_g += miss_g_aux
                 hit_cache = [x + y for x, y in zip(hit_cache, hit_cache_aux)]
                 miss_cache = [x + y for x, y in zip(miss_cache, miss_cache_aux)]
+                rec_movies_list_all = self.apply_ncf_model(f'weights{i+1}.h5', sub_users, par_data_ratings, max(par_users)+1, max(par_movies)+1)
+                flat_rec_list = list(dict.fromkeys([item for sublist in rec_movies_list_all for item in sublist]))
         hit_ratio_global = float(hit_g / (hit_g + miss_g))
         hit_ratio_avg = float(sum(hit_cache) / (sum(hit_cache) + sum(miss_cache)))
         for j in range(0, network.nb_nodes):
