@@ -10,6 +10,7 @@ from CFModel import CFModel, NCFModel  # Import Collaborative Filtering model ar
 from math import floor
 import numpy as np
 import Cache_Structure
+import content_based_rec_sys
 
 
 class SimModel:
@@ -78,6 +79,8 @@ class SimModel:
         # For every user TODO: should be every user in the past stages only not future
         # TODO: Batch the data to the model
         # for i in range(1, len(self.users)+1):
+        recommender = content_based_rec_sys.ContentRecSys()
+        movies_with_genres = recommender.data_prep()
         for i in sub_users:
             # Predict user i ratings (enter user and his recommended movies --> get rating)
             # print("data.ratings: \n", data.ratings)
@@ -88,7 +91,10 @@ class SimModel:
             # Recommend user items (enter user and all movies --> get rating and sort them by best)
             # Remove from data.ratings the movies already rated/requested by the user and predict from the list of movies not yet rated
             user_ratings = par_data_ratings[par_data_ratings['user_id'] == i][['user_id', 'movie_id', 'rating']]
-            recommendations = par_data_ratings[par_data_ratings['movie_id'].isin(user_ratings['movie_id']) == False][['movie_id']].drop_duplicates()
+            user_movie_data = user_ratings[['movie_id', 'rating']].copy(deep=True)
+            recommended_movies = recommender.recommend_movies(user_movie_data, movies_with_genres, 100)
+            # recommendations = par_data_ratings[par_data_ratings['movie_id'].isin(user_ratings['movie_id']) == False][['movie_id']].drop_duplicates()
+            recommendations = recommended_movies[recommended_movies['movie_id'].isin(par_data_ratings['movie_id']) == True][['movie_id']]
             recommendations['prediction'] = recommendations.apply(lambda x: trained_model.rate(i, x['movie_id']), axis=1)
             recommendations = recommendations.sort_values(by='prediction', ascending=False).merge(self.data.movies, on='movie_id', how='inner', suffixes=['_u', '_m']).head(20)
             # print(recommendations)
