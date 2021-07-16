@@ -103,7 +103,8 @@ class ContentRecSys:
         recommended_movies = copy.loc[top_n_index, :]
         # Now we can display the top 20 movies in descending order of preference
         # print(recommended_movies)
-        return recommended_movies
+        # return recommended_movies # this will return the list of movies (titles) with year and genres
+        return pd.DataFrame(recommended_movies.index) # this will return the indexes (representing movie_ids) of the dataframe
 
 
 if __name__ == "__main__":
