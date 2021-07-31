@@ -11,7 +11,7 @@ import torch.utils.data as data
 import torch.backends.cudnn as cudnn
 from tensorboardX import SummaryWriter
 
-import model
+from models.NCF.NCF import NCF
 import config
 import evaluate
 import data_utils
@@ -67,7 +67,7 @@ os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 cudnn.benchmark = True
 
 
-############################## PREPARE DATASET ##########################
+# ############################# PREPARE DATASET ##########################
 train_data, test_data, user_num, item_num, train_mat = data_utils.load_all()
 
 # construct the train and test datasets
@@ -80,7 +80,7 @@ train_loader = data.DataLoader(train_dataset,
 test_loader = data.DataLoader(test_dataset,
 		batch_size=args.test_num_ng+1, shuffle=False, num_workers=0)
 
-########################### CREATE MODEL #################################
+# ########################## CREATE MODEL #################################
 if config.model == 'NeuMF-pre':
 	assert os.path.exists(config.GMF_model_path), 'lack of GMF model'
 	assert os.path.exists(config.MLP_model_path), 'lack of MLP model'
@@ -90,8 +90,8 @@ else:
 	GMF_model = None
 	MLP_model = None
 
-model = model.NCF(user_num, item_num, args.factor_num, args.num_layers,
-				  args.dropout, config.model, GMF_model, MLP_model)
+model = NCF(user_num, item_num, args.factor_num, args.num_layers,
+			args.dropout, config.model, GMF_model, MLP_model)
 model.cuda()
 loss_function = nn.BCEWithLogitsLoss()
 
@@ -102,7 +102,12 @@ else:
 
 # writer = SummaryWriter() # for visualization
 
-########################### TRAINING #####################################
+# Calculate the Paramters and Flops
+total = sum([param.nelement() for param in model.parameters()])
+print("Number of parameter: %.2fM" % (total/1e6))
+
+
+# ########################## TRAINING #####################################
 count, best_hr = 0, 0
 for epoch in range(args.epochs):
 	print(" Epoch # ", epoch)
