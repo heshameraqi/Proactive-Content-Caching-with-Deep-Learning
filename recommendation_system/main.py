@@ -12,6 +12,7 @@ import torch.backends.cudnn as cudnn
 from tensorboardX import SummaryWriter
 
 from models.NCF.NCF import NCF
+from models.NCF_Att.NCF_Att import NCF_Att
 import config
 import evaluate
 import data_utils
@@ -32,7 +33,7 @@ parser.add_argument("--batch_size",
 	help="batch size for training")
 parser.add_argument("--epochs", 
 	type=int,
-	default=20,  
+	default=50,
 	help="training epoches")
 parser.add_argument("--top_k", 
 	type=int, 
@@ -86,12 +87,20 @@ if config.model == 'NeuMF-pre':
 	assert os.path.exists(config.MLP_model_path), 'lack of MLP model'
 	GMF_model = torch.load(config.GMF_model_path)
 	MLP_model = torch.load(config.MLP_model_path)
+elif 'NCF_Att' in config.model:
+	assert os.path.exists(config.MLP_model_path), 'lack of MLP model'
+	MLP_model = torch.load(config.MLP_model_path)
+	GMF_model = None
 else:
 	GMF_model = None
 	MLP_model = None
 
-model = NCF(user_num, item_num, args.factor_num, args.num_layers,
-			args.dropout, config.model, GMF_model, MLP_model)
+if 'NCF_Att' in config.model:
+	model = NCF_Att(user_num, item_num, args.factor_num, args.num_layers,
+				args.dropout, config.model, GMF_model, MLP_model)
+else:
+	model = NCF(user_num, item_num, args.factor_num, args.num_layers,
+				args.dropout, config.model, GMF_model, MLP_model)
 model.cuda()
 loss_function = nn.BCEWithLogitsLoss()
 
@@ -102,7 +111,7 @@ else:
 
 # writer = SummaryWriter() # for visualization
 
-# Calculate the Paramters and Flops
+# Calculate the model parameters
 total = sum([param.nelement() for param in model.parameters()])
 print("Number of parameter: %.2fM" % (total/1e6))
 
