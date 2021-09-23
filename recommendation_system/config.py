@@ -3,8 +3,12 @@ dataset = 'ml-1m'
 assert dataset in ['ml-1m', 'pinterest-20']
 
 # model name 
-model = 'NCF_Att-pre'
+model = 'NeuMF-pre'
 assert model in ['MLP', 'GMF', 'NeuMF-end', 'NeuMF-pre', 'NCF_Att', 'NCF_Att-pre']
+
+# Training
+modes = ["training", "testing"]
+mode = modes[1]
 
 # paths
 main_path = 'Data/'

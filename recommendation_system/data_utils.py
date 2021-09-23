@@ -1,9 +1,7 @@
 import numpy as np 
 import pandas as pd 
 import scipy.sparse as sp
-
 import torch.utils.data as data
-
 import config
 
 
@@ -11,16 +9,15 @@ def load_all(test_num=100):
 	"""
 	We load all the three file here to save time in each epoch.
 	returns:
-	train_data: list its size is 1M contains pairs of user-item.
-	test_data: list contains pairs of user-item. the first element for each user is rated and others are not rated(not sure)
+	train_data: Each Line is a training instance: userID itemID rating timestamp (if have)
+	test_data: Each Line is a testing instance: userID itemID rating timestamp (if have)
 	user_num: (n) number of users in dataset
 	item_num: (m) number of items in dataset
 	train_mat: (n,m) matrix where 1 is set to indicate if the user has ratted this item or not.
 	"""
-	train_data = pd.read_csv(
-		config.train_rating, 
-		sep='\t', header=None, names=['user', 'item'], 
-		usecols=[0, 1], dtype={0: np.int32, 1: np.int32})
+	train_data = pd.read_csv(config.train_rating,
+							 sep='\t', header=None, names=['user', 'item'],
+							 usecols=[0, 1], dtype={0: np.int32, 1: np.int32})
 
 	user_num = train_data['user'].max() + 1
 	item_num = train_data['item'].max() + 1

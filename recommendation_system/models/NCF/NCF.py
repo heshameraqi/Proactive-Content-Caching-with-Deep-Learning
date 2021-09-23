@@ -4,8 +4,7 @@ import torch.nn.functional as F
 
 
 class NCF(nn.Module):
-	def __init__(self, user_num, item_num, factor_num, num_layers,
-					dropout, model, GMF_model=None, MLP_model=None):
+	def __init__(self, user_num, item_num, factor_num, num_layers, dropout, model, GMF_model=None, MLP_model=None):
 		super(NCF, self).__init__()
 		"""
 		user_num: number of users;
@@ -24,10 +23,8 @@ class NCF(nn.Module):
 
 		self.embed_user_GMF = nn.Embedding(user_num, factor_num)
 		self.embed_item_GMF = nn.Embedding(item_num, factor_num)
-		self.embed_user_MLP = nn.Embedding(
-				user_num, factor_num * (2 ** (num_layers - 1)))
-		self.embed_item_MLP = nn.Embedding(
-				item_num, factor_num * (2 ** (num_layers - 1)))
+		self.embed_user_MLP = nn.Embedding(user_num, factor_num * (2 ** (num_layers - 1)))
+		self.embed_item_MLP = nn.Embedding(item_num, factor_num * (2 ** (num_layers - 1)))
 
 		MLP_modules = []
 		for i in range(num_layers):
@@ -42,7 +39,6 @@ class NCF(nn.Module):
 		else:
 			predict_size = factor_num * 2
 		self.predict_layer = nn.Linear(predict_size, 1)
-
 		self._init_weight_()
 
 	def _init_weight_(self):
