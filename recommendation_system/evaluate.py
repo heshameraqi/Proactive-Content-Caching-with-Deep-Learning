@@ -1,5 +1,6 @@
 import numpy as np
 import torch
+import config
 
 
 def hit(gt_item, pred_items):
@@ -18,11 +19,20 @@ def ndcg(gt_item, pred_items):
 def metrics(model, test_loader, top_k):
 	HR, NDCG = [], []
 
-	for user, item, label in test_loader:
+	#for user, item, label, user_info, item_info in test_loader:
+	for user, item, target in test_loader:
+		label = target['label']
 		user = user.cuda()
 		item = item.cuda()
-
-		predictions = model(user, item)
+		if config.user_item_info:
+				user_info = target['user_info']
+				item_info = target['item_info']
+				user_info = user_info.float().cuda()
+				item_info = item_info.float().cuda()
+		else:
+				user_info = None
+				item_info = None
+		predictions = model(user, item, user_info, item_info)
 		_, indices = torch.topk(predictions, top_k)
 		recommends = torch.take(item, indices).cpu().numpy().tolist()
 
