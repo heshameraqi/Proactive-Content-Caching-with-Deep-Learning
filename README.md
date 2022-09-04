@@ -1,4 +1,4 @@
-# DLC
+# DLC: An End-to-End Deep Learning Proactive Content Caching Framework
 ### A pytorch GPU implementation our accepted paper "End-to-End Deep Learning Proactive Content Caching Framework" at Globecom 2022 CSM
 
 ## Authors:
