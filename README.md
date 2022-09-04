@@ -1,6 +1,16 @@
 # DLC
 ### A pytorch GPU implementation our accepted paper "End-to-End Deep Learning Proactive Content Caching Framework" at Globecom 2022 CSM
 
+## Authors:
+    * Eslam Mohamed BAKR
+    * Hamza Ben-Ammar '
+    * Hesham Eraqi '
+    * Sherif G. Aly
+    * Tamer Elbatt
+    * Yacine Ghamri-Doudane
+
+' = Equal contribution
+
 ## Abstract:
 Proactive content caching has been proposed as a
 promising solution to cope with the challenges caused by the
