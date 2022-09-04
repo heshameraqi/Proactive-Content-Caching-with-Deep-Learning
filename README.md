@@ -71,5 +71,5 @@ We used the following repos to run the other content caching algorithms, i.e., F
     * https://github.com/dasebe/webcachesim
     * https://github.com/dasebe/optimalwebcaching
 
-## Citation:
-Will be posted later.
+## Please cite our work:
+Eslam Bakr, Hamza B. Ammar, Hesham M. Eraqi, Sherif Aly, Yacine Ghamri-Doudane, Tamer Elbatt. End-to-End Deep Learning Proactive Content Caching Framework. IEEE Global Communications Conference. Rio de Janeiro, Brazil, December 2022.
