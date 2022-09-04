@@ -4,7 +4,7 @@
 ## Authors:
     * Eslam Mohamed BAKR
     * Hamza Ben-Ammar '
-    * Hesham Eraqi '
+    * Hesham M. Eraqi '
     * Sherif G. Aly
     * Tamer Elbatt
     * Yacine Ghamri-Doudane
