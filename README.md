@@ -3,13 +3,13 @@
 
 ## Authors:
     * Eslam Mohamed BAKR
-    * Hamza Ben-Ammar '
-    * Hesham M. Eraqi '
+    * Hamza Ben-Ammar*
+    * Hesham M. Eraqi*
     * Sherif G. Aly
     * Tamer Elbatt
     * Yacine Ghamri-Doudane
 
-' = Equal contribution
+* = Equal contribution
 
 ## Abstract:
 Proactive content caching has been proposed as a
